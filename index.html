@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathPro AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #c9d6ff, #e2e2e2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+    }
+
+    h2 {
+      font-size: 3rem;
+      color: #2c3e50;
+      margin-top: 40px;
+      margin-bottom: 20px;
+    }
+
+    #chat {
+      background: #ffffff;
+      width: 90%;
+      max-width: 800px;
+      height: 60vh;
+      overflow-y: auto;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .msg {
+      margin: 10px 0;
+      padding: 12px 16px;
+      border-radius: 12px;
+      max-width: 80%;
+      line-height: 1.5;
+    }
+
+    .user {
+      background: #d1f2eb;
+      color: #117864;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .bot {
+      background: #fce4ec;
+      color: #c2185b;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    .input-area {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      width: 60vw;
+      max-width: 500px;
+      padding: 15px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+
+    button {
+      padding: 15px 25px;
+      font-size: 16px;
+      background: #2c3e50;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #34495e;
+    }
+  </style>
+</head>
+<body>
+  <h2>🔥 MathPro AI 🔥</h2>
+  <div id="chat"></div>
+  <div class="input-area">
+    <input id="userInput" type="text" placeholder="Ask me anything mathy...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+
+    const badWords = [
+      "anal","anus","arse","ass","ballsack","balls","bastard","bitch","biatch","bloody",
+      "blowjob","blow job","bollock","bollok","boner","boob","bugger","bum","butt",
+      "buttplug","clitoris","cock","coon","crap","cunt","damn","dick","dildo","dyke",
+      "fag","feck","fellate","fellatio","felching","fuck","f u c k","fudgepacker","fudge packer",
+      "flange","goddamn","god damn","hell","homo","jerk","jizz","knobend","knob end",
+      "labia","lmao","lmfao","muff","nigger","nigga","omg","penis","piss","poop","prick",
+      "pube","pussy","queer","scrotum","sex","shit","s hit","sh1t","slut","smegma","spunk",
+      "tit","tosser","turd","twat","vagina","wank","whore"
+    ];
+
+    function appendMessage(text, sender) {
+      const div = document.createElement("div");
+      div.className = `msg ${sender}`;
+      div.textContent = (sender === "user" ? "You: " : "Bot: ") + text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function containsBadWord(text) {
+      const lower = text.toLowerCase();
+      return badWords.some(word => lower.includes(word));
+    }
+
+    function evaluateMath(text) {
+      try {
+        const cleanText = text
+          .replace(/what is|calculate|solve|please|explain|how much is|can you|find|equals|=/gi, "")
+          .trim();
+
+        if (/^[0-9+\-*/().\s]+$/.test(cleanText)) {
+          return eval(cleanText);
+        } else {
+          return null;
+        }
+      } catch {
+        return null;
+      }
+    }
+
+    function handleTables(text) {
+      const match = text.match(/(?:show|give|display)?\s*(\d+)\s*(?:times table|table|tables)/i);
+      if (match) {
+        const num = parseInt(match[1]);
+        let result = "";
+        for (let i = 1; i <= 10; i++) {
+          result += `${num} x ${i} = ${num * i}\n`;
+        }
+        return result;
+      }
+      return null;
+    }
+
+    function handleGreetings(text) {
+      const greetings = ["hi", "hello", "hey", "yo", "sup"];
+      return greetings.includes(text.toLowerCase()) ? "Hey there! 👋 I'm MathPro AI. Ask me any math stuff!" : null;
+    }
+
+    function handleExplainDivide(text) {
+      const match = text.match(/explain.*?(\d+)\s*(?:divided by|\/)\s*(\d+)/i);
+      if (match) {
+        const a = parseInt(match[1]);
+        const b = parseInt(match[2]);
+        const result = a / b;
+        return `${a} divided by ${b} is ${result} because ${a} contains ${b} exactly ${result} times.`;
+      }
+      return null;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const question = input.value.trim();
+      if (!question) return;
+
+      appendMessage(question, "user");
+      input.value = "";
+
+      if (containsBadWord(question)) {
+        appendMessage("\u26a0\ufe0f Please don’t use bad words. Let’s keep it clean!", "bot");
+        return;
+      }
+
+      const response =
+        handleGreetings(question) ||
+        handleExplainDivide(question) ||
+        handleTables(question) ||
+        evaluateMath(question) ||
+        "Hmm \ud83e\udd14 I didn't get that. Try asking something math related!";
+
+      appendMessage(response.toString(), "bot");
+    }
+  </script>
+</body>
+</html>
